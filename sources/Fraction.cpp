@@ -1,32 +1,45 @@
 #include "Fraction.hpp"
-#include <algorithm>
 
-// #include <limits>
+#include <algorithm>
+#include <limits>
 // numeric_limits<int>::max()
 
 namespace ariel
 {
-    int Fraction::safe_add(int num1, int num2) const{
+    int Fraction::safe_addition(int num1, int num2) const{
         if (num1 == 0)
             return num2;
         if (num2 == 0)
             return num1;
 
-        int result = num1 + num2;
-        if ((result - num1 != num2) || (result - num2 != num1))
+        if ((num2 > 0 && num1 > numeric_limits<int>::max() - num2) ||
+            (num2 < 0 && num1 < numeric_limits<int>::min() - num2))
             throw overflow_error("Integer overflow! ");
 
-        return result;
+        return num1 + num2;
+    }
+    int Fraction::safe_subtract(int num1, int num2) const{
+        if (num1 == 0)
+            return -num2;
+        if (num2 == 0)
+            return num1;
+
+        if ((num2 < 0 && num1 > numeric_limits<int>::max() + num2) ||
+            (num2 > 0 && num1 < numeric_limits<int>::min() + num2))
+            throw overflow_error("Integer overflow! ");
+
+        return num1 - num2;
     }
     int Fraction::safe_multiply(int num1, int num2) const {
+        
         if (num1 == 0 || num2 == 0)
             return 0;
 
-        int result = num1 * num2;
-        if ((result / num1 != num2) || (result / num2 != num1))
+        if ((num2 > 0 && num1 > numeric_limits<int>::max() / num2) ||
+            (num2 < 0 && num1 < numeric_limits<int>::max() / num2))
             throw overflow_error("Integer overflow!");
 
-        return result;
+        return num1 * num2;
     }
 
     void Fraction::reduce() {
@@ -123,11 +136,13 @@ namespace ariel
         int a = safe_multiply(numerator, other.getDenominator());
         int b = safe_multiply(other.getNumerator(), denominator);
 
-        return Fraction(safe_add(a, b), safe_multiply(denominator, other.getDenominator()));
+        return Fraction(safe_addition(a, b), safe_multiply(denominator, other.getDenominator()));
     }
     Fraction Fraction::operator-(const Fraction& other) const {
-        Fraction negation = -other;
-        return *this + negation;
+        int a = safe_multiply(numerator, other.getDenominator());
+        int b = safe_multiply(other.getNumerator(), denominator);
+
+        return Fraction(safe_subtract(a, b), safe_multiply(denominator, other.getDenominator()));
     }
     Fraction Fraction::operator*(const Fraction& other) const {
         int numerator = safe_multiply(this->numerator, other.getNumerator());
@@ -248,12 +263,12 @@ namespace ariel
     // Prefix increment and decrement operators:
 
     Fraction& Fraction::operator++() {
-        numerator = safe_add(numerator, denominator);
+        numerator = safe_addition(numerator, denominator);
         reduce();
         return *this;
     }
     Fraction& Fraction::operator--() {
-        numerator = safe_add(numerator, -denominator);
+        numerator = safe_addition(numerator, -denominator);
         reduce();
         return *this;
     }
@@ -262,13 +277,13 @@ namespace ariel
 
     Fraction Fraction::operator++(int) {
         Fraction copy(*this);
-        numerator = safe_add(numerator, denominator);
+        numerator = safe_addition(numerator, denominator);
         reduce();
         return copy;
     }
     Fraction Fraction::operator--(int) {
         Fraction copy(*this);
-        numerator = safe_add(numerator, -denominator);
+        numerator = safe_addition(numerator, -denominator);
         reduce();
         return copy;
     }

@@ -10,7 +10,8 @@ namespace ariel
             int denominator;
             void reduce();
             int safe_multiply(int num1, int num2) const;
-            int safe_add(int num1, int num2) const;
+            int safe_addition(int num1, int num2) const;
+            int safe_subtract(int num1, int num2) const;
 
         public:
             // Constructors:
